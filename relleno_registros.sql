@@ -1,0 +1,165 @@
+USE gestion_stock1;
+-- BLOQUE 1: MODELOS DE DROIDES (tabla: modelo_droide)
+CALL pr_agregar_modelo('x1', 'terrestre');
+CALL pr_agregar_modelo('x2', 'terrestre');
+CALL pr_agregar_modelo('x3', 'aereo');
+CALL pr_agregar_modelo('x4', 'terrestre');
+CALL pr_agregar_modelo('x5', 'aereo');
+CALL pr_agregar_modelo('x6', 'terrestre');
+select * from modelo_droide;
+-- BLOQUE 2: MODELOS DE PRODUCTO (tabla: modelo)
+CALL pr_crear_modelo('tv24');
+CALL pr_crear_modelo('tv28');
+CALL pr_crear_modelo('tv32');
+CALL pr_crear_modelo('tv40');
+CALL pr_crear_modelo('tv50');
+select * from modelo;
+-- BLOQUE 3: DROIDES (tabla: droide)
+CALL pr_agregar_droide('droide 1', 1, 1);
+CALL pr_agregar_droide('droide 2', 1, 2);
+CALL pr_agregar_droide('droide 3', 1, 1);
+CALL pr_agregar_droide('droide 4', 1, 1);
+CALL pr_agregar_droide('droide 5', 1, 3);
+CALL pr_agregar_droide('droide 6', 1, 4);
+CALL pr_agregar_droide('droide 7', 1, 2);
+select * from droide;
+-- BLOQUE 4: UBICACIONES (tabla: ubicacion)
+CALL pr_crear_ubicacion(1, 7, 2, 0, 'Zona 1');
+CALL pr_crear_ubicacion(2, 9, 7, 0, 'Zona 2');
+CALL pr_crear_ubicacion(3, 3, 7, 4, 'Zona 3');
+CALL pr_crear_ubicacion(4, 1, 5, 1, 'Zona 4');
+CALL pr_crear_ubicacion(5, 2, 8, 3, 'Zona 5');
+CALL pr_crear_ubicacion(6, 9, 0, 2, 'Zona 6');
+CALL pr_crear_ubicacion(7, 6, 5, 0, 'Zona 7');
+CALL pr_crear_ubicacion(8, 1, 1, 1, 'Zona 8');
+CALL pr_crear_ubicacion(9, 6, 3, 2, 'Zona 9');
+CALL pr_crear_ubicacion(10, 8, 3, 0, 'Zona 10');
+select * from ubicacion;
+-- BLOQUE 5: PRODUCTOS (tabla: productos)
+CALL pr_crear_producto('placas main', 100, 1);
+CALL pr_crear_producto('placas fuente', 100, 1);
+CALL pr_crear_producto('placas main', 100, 2);
+CALL pr_crear_producto('placas fuente', 100, 2);
+CALL pr_crear_producto('placas main', 100, 3);
+CALL pr_crear_producto('placas fuente', 100, 3);
+CALL pr_crear_producto('placas main', 100, 4);
+CALL pr_crear_producto('placas fuente', 100, 4);
+CALL pr_crear_producto('placas main', 100, 5);
+CALL pr_crear_producto('placas fuente', 100, 5);
+select * from productos;
+-- BLOQUE 6: VINCULAR PRODUCTOS A MODELOS (tabla: producto_modelo)
+CALL pr_vincular_producto_modelo(1, 1);
+CALL pr_vincular_producto_modelo(2, 1);
+CALL pr_vincular_producto_modelo(3, 2);
+CALL pr_vincular_producto_modelo(4, 2);
+CALL pr_vincular_producto_modelo(5, 3);
+CALL pr_vincular_producto_modelo(6, 3);
+CALL pr_vincular_producto_modelo(7, 4);
+CALL pr_vincular_producto_modelo(8, 4);
+CALL pr_vincular_producto_modelo(9, 5);
+CALL pr_vincular_producto_modelo(10, 5);
+-- BLOQUE 7: PEDIDOS (tabla: pedido) — USANDO PROCEDIMIENTO
+CALL pr_crear_pedido_restar_sumar(1, 2, 1);
+CALL pr_crear_pedido_restar_sumar(2, 6, 0);
+CALL pr_crear_pedido_restar_sumar(4, 50, 0);
+CALL pr_crear_pedido_restar_sumar(5, 8, 0);
+CALL pr_crear_pedido_restar_sumar(6, 40, 0);
+CALL pr_crear_pedido_restar_sumar(7, 20, 0);
+CALL pr_crear_pedido_restar_sumar(8, 15, 0);
+CALL pr_crear_pedido_restar_sumar(5, 6, 1);
+CALL pr_crear_pedido_restar_sumar(2, 20, 0);
+CALL pr_crear_pedido_restar_sumar(3, 6, 1);
+CALL pr_crear_pedido_restar_sumar(6, 5, 1);
+CALL pr_crear_pedido_restar_sumar(8, 20, 1);
+CALL pr_crear_pedido_restar_sumar(10, 30, 0);
+CALL pr_crear_pedido_restar_sumar(9, 2, 0);
+CALL pr_crear_pedido_restar_sumar(2, 1, 0);
+CALL pr_crear_pedido_restar_sumar(2, 2, 0);
+CALL pr_crear_pedido_restar_sumar(5, 1, 0);
+CALL pr_crear_pedido_restar_sumar(2, 1, 0);
+CALL pr_crear_pedido_restar_sumar(2, 3, 0);
+CALL pr_crear_pedido_restar_sumar(2, 1, 0);
+CALL pr_crear_pedido_restar_sumar(8, 1, 0);
+CALL pr_crear_pedido_restar_sumar(1, 2, 0);
+CALL pr_crear_pedido_restar_sumar(7, 1, 0);
+CALL pr_crear_pedido_restar_sumar(1, 1, 0);
+CALL pr_crear_pedido_restar_sumar(1, 4, 0);
+CALL pr_crear_pedido_restar_sumar(1, 3, 0);
+CALL pr_crear_pedido_restar_sumar(9, 1, 0);
+CALL pr_crear_pedido_restar_sumar(1, 1, 0);
+CALL pr_crear_pedido_restar_sumar(4, 1, 0);
+CALL pr_crear_pedido_restar_sumar(10, 1, 0);
+-- BLOQUE 8: PIEZAS DE REPARACIÓN (tabla: piezas_reparacion_droide)
+CALL pr_nueva_pieza('motor terrestre', 9, 2015, 50);
+CALL pr_nueva_pieza('motor aereo', 9, 2018, 50);
+CALL pr_nueva_pieza('rueda', 9, 2015, 50);
+CALL pr_nueva_pieza('aspa', 9, 2015, 50);
+CALL pr_nueva_pieza('motor terrestre', 8, 2021, 21);
+CALL pr_nueva_pieza('motor aereo', 7, 2021, 10);
+CALL pr_nueva_pieza('aspa', 5, 2025, 10);
+CALL pr_nueva_pieza('bateria 1', 5, 2020, 10);
+CALL pr_nueva_pieza('bateria 2', 5, 2025, 20);
+select * from piezas_reparacion_droide;
+-- BLOQUE 9: MODIFICACIÓN Y REPARACIONES DE DROIDES
+CALL pr_modificar_droide(3, 0); -- dejar fuera de servicio el droide id 3
+CALL pr_agregar_reparacion_droide(3, 1, 'motor descompuesto, reemplazo');
+CALL pr_modificar_droide(3, 1); -- volver a poner en servicio
+CALL pr_modificar_droide(1, 0);
+CALL pr_modificar_droide(2, 0);
+CALL pr_agregar_reparacion_droide(1, 8, 'bateria agotada, reemplazo');
+CALL pr_agregar_reparacion_droide(2, 8, 'bateria agotada, reemplazo');
+CALL pr_modificar_droide(1, 1);
+CALL pr_modificar_droide(2, 1);
+-- BLOQUE 10: AUDITORES Y AUDITORIA
+CALL pr_agregar_auditor('juan', 'perez');
+CALL pr_agregar_auditor('leonardo', 'rodriguez');
+CALL pr_agregar_auditor('juana', 'de arco');
+CALL pr_registrar_auditoria(1, JSON_OBJECT('resultado_auditoria', 'sin faltantes'));
+-- BLOQUE 11: DIRECCIONES
+CALL pr_gestionar_direccion('Calle Falsa', 123);
+CALL pr_gestionar_direccion('San Martín', 250);
+CALL pr_gestionar_direccion('Belgrano', 1080);
+CALL pr_gestionar_direccion('Mitre', 456);
+CALL pr_gestionar_direccion('Sarmiento', 980);
+CALL pr_gestionar_direccion('Rivadavia', 1520);
+CALL pr_gestionar_direccion('Urquiza', 875);
+CALL pr_gestionar_direccion('Independencia', 642);
+CALL pr_gestionar_direccion('Alsina', 233);
+CALL pr_gestionar_direccion('25 de Mayo', 300);
+CALL pr_gestionar_direccion('9 de Julio', 999);
+CALL pr_gestionar_direccion('Lavalle', 120);
+CALL pr_gestionar_direccion('Maipú', 1540);
+CALL pr_gestionar_direccion('Pueyrredón', 890);
+CALL pr_gestionar_direccion('Roca', 340);
+CALL pr_gestionar_direccion('Güemes', 785);
+CALL pr_gestionar_direccion('Viamonte', 212);
+CALL pr_gestionar_direccion('Italia', 1320);
+CALL pr_gestionar_direccion('España', 760);
+CALL pr_gestionar_direccion('Chile', 430);
+CALL pr_gestionar_direccion('Francia', 188);
+CALL pr_gestionar_direccion('Brasil', 520);
+CALL pr_gestionar_direccion('Bolivia', 220);
+CALL pr_gestionar_direccion('México', 980);
+CALL pr_gestionar_direccion('Paraguay', 650);
+CALL pr_gestionar_direccion('Colombia', 1110);
+CALL pr_gestionar_direccion('Perú', 870);
+CALL pr_gestionar_direccion('Uruguay', 310);
+CALL pr_gestionar_direccion('Venezuela', 1440);
+CALL pr_gestionar_direccion('Av. Siempre Viva', 742);
+-- BLOQUE 12: PERSONAS + PEDIDOS (registrar_persona_pedido)
+CALL pr_registrar_persona_pedido('Carlos', 'Ramírez', 'TechNova SA', '20345678901', 1, 'AB123CD', 2);
+CALL pr_registrar_persona_pedido('María', 'Gómez', 'TransLog SRL', '27456789012', 2, 'CD456EF', 3);
+CALL pr_registrar_persona_pedido('Julián', 'Pérez', 'FutureSoft', '20333444556', 3, 'EF789GH', 4);
+CALL pr_registrar_persona_pedido('Lucía', 'Fernández', 'MegaBuild SA', '27322110998', 4, 'GH101IJ', 5);
+CALL pr_registrar_persona_pedido('Andrés', 'López', 'ElectroSystems', '20399087654', 5, 'IJ112KL', 6);
+CALL pr_registrar_persona_pedido('Sofía', 'Martínez', 'LogiCorp', '27345678976', 6, 'KL223MN', 7);
+CALL pr_registrar_persona_pedido('Federico', 'García', 'AutoParts SRL', '20456712309', 7, 'MN334OP', 8);
+CALL pr_registrar_persona_pedido('Paula', 'Ruiz', 'SteelWorks', '27322176543', 8, 'OP445QR', 9);
+CALL pr_registrar_persona_pedido('Nicolás', 'Torres', 'BuildPro SA', '20433322111', 9, 'QR556ST', 10);
+CALL pr_registrar_persona_pedido('Camila', 'Alvarez', 'TechVision', '27312398765', 10, 'ST667UV', 11);
+-- Prueba de vistas
+select * from vw_reporte;
+select * from vw_archivos_pedidos;
+select * from vw_stock;
+select * from vw_persona_pedido_detalle;
+select * from vw_piezas_modelos_droides_failure;

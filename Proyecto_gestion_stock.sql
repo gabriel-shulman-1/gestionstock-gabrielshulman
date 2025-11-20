@@ -1,73 +1,26 @@
-CREATE SCHEMA IF NOT EXISTS `gestion_stock` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
-USE gestion_stock;
+CREATE SCHEMA IF NOT EXISTS `gestion_stock1` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+USE gestion_stock1;
 
 CREATE TABLE IF NOT EXISTS ubicacion (
-  `id` INT NOT NULL,
-  `X` TINYINT NULL DEFAULT NULL,
-  `Y` TINYINT NULL DEFAULT NULL,
-  `Z` TINYINT NULL DEFAULT NULL,
-  `descripcion` VARCHAR(100) NULL DEFAULT NULL,
-  PRIMARY KEY (`id`));
-
-CREATE TABLE IF NOT EXISTS productos (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(100) NOT NULL,
-  `qty` INT NOT NULL DEFAULT '0',
-  `ubicacion_pieza` INT NOT NULL,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `fk_productos_ubicacion`
-    FOREIGN KEY (`ubicacion_pieza`)
-    REFERENCES ubicacion (`id`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE);
-
-CREATE TABLE IF NOT EXISTS droide (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(100) NOT NULL,
-  `fecha_servicio` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  `en_servicio` TINYINT NOT NULL,
-  PRIMARY KEY (`id`));
-  
-ALTER TABLE droide
-ADD COLUMN modelo_id INT NULL,
-ADD CONSTRAINT fk_droide_modelo
-  FOREIGN KEY (modelo_id)
-  REFERENCES modelo_droide (id)
-  ON DELETE SET NULL
-  ON UPDATE CASCADE;
-
-CREATE TABLE IF NOT EXISTS modelo_droide (
-  id INT NOT NULL AUTO_INCREMENT,
-  nombre VARCHAR(100) NOT NULL,
-  tipo ENUM('terrestre', 'aereo') NOT NULL,
+  id INT NOT NULL,
+  X TINYINT NULL,
+  Y TINYINT NULL,
+  Z TINYINT NULL,
+  descripcion VARCHAR(100) NULL,
   PRIMARY KEY (id)
 );
 
-CREATE TABLE IF NOT EXISTS pedido (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `pieza` INT NOT NULL,
-  `cantidad` INT NOT NULL,
-  `droideAsignado` INT NULL DEFAULT NULL,
-  `tipo_movimiento` TINYINT NOT NULL,
-  `tiempo` TIMESTAMP,
-  PRIMARY KEY (`id`),
-  CONSTRAINT `pedido_ibfk_1`
-    FOREIGN KEY (`pieza`)
-    REFERENCES productos (`id`)
+CREATE TABLE IF NOT EXISTS productos (
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  qty INT NOT NULL DEFAULT 0,
+  ubicacion_pieza INT NOT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_productos_ubicacion
+    FOREIGN KEY (ubicacion_pieza)
+    REFERENCES ubicacion (id)
     ON DELETE RESTRICT
-    ON UPDATE CASCADE,
-  CONSTRAINT `pedido_ibfk_2`
-    FOREIGN KEY (`droideAsignado`)
-    REFERENCES droide (`id`)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE);
-
-CREATE TABLE IF NOT EXISTS log_movimientos (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  tabla_afectada VARCHAR(100) NOT NULL,
-  operacion VARCHAR(50) NOT NULL, -- (INSERT, UPDATE, DELETE)
-  descripcion TEXT,
-  fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS modelo (
@@ -80,6 +33,7 @@ CREATE TABLE IF NOT EXISTS producto_modelo (
   id INT AUTO_INCREMENT PRIMARY KEY,
   producto_id INT NOT NULL,
   modelo_id INT NOT NULL,
+  UNIQUE (producto_id, modelo_id),
   CONSTRAINT fk_producto_modelo_producto
     FOREIGN KEY (producto_id)
     REFERENCES productos (id)
@@ -89,47 +43,84 @@ CREATE TABLE IF NOT EXISTS producto_modelo (
     FOREIGN KEY (modelo_id)
     REFERENCES modelo (id)
     ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  UNIQUE (producto_id, modelo_id)
+    ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS reparacion_droide (
+CREATE TABLE IF NOT EXISTS modelo_droide (
+  id INT NOT NULL AUTO_INCREMENT,
+  nombre VARCHAR(100) NOT NULL,
+  tipo ENUM('terrestre', 'aereo') NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS droide (
+  id INT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  fecha_servicio TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  en_servicio TINYINT NOT NULL,
+  modelo_id INT NULL,
+  PRIMARY KEY (id),
+  CONSTRAINT fk_droide_modelo
+    FOREIGN KEY (modelo_id)
+    REFERENCES modelo_droide (id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS pedido (
+  id INT NOT NULL AUTO_INCREMENT,
+  pieza INT NOT NULL,
+  cantidad INT NOT NULL,
+  droideAsignado INT NULL,
+  tipo_movimiento TINYINT NOT NULL,
+  tiempo TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  CONSTRAINT pedido_ibfk_1
+    FOREIGN KEY (pieza)
+    REFERENCES productos (id)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT pedido_ibfk_2
+    FOREIGN KEY (droideAsignado)
+    REFERENCES droide (id)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS log_movimientos (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  droide_id INT NOT NULL,
-  pieza_id INT NOT NULL,
-  incidente_id INT NOT NULL,
-  fecha_reparacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  observacion VARCHAR(255) NULL
+  tabla_afectada VARCHAR(100) NOT NULL,
+  operacion VARCHAR(50) NOT NULL,
+  descripcion TEXT,
+  fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS direccion (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  calle VARCHAR(100) NOT NULL,
+  altura INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS persona_pedido (
   id INT AUTO_INCREMENT PRIMARY KEY,
   nombre VARCHAR(100) NOT NULL,
   apellido VARCHAR(100) NOT NULL,
-  empresa VARCHAR(150) NULL,
+  empresa VARCHAR(150),
   dni_cuil VARCHAR(20) NOT NULL,
   pedido_id INT NOT NULL,
   patente VARCHAR(20),
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  direccion_id INT NULL,
   CONSTRAINT fk_persona_pedido
     FOREIGN KEY (pedido_id)
     REFERENCES pedido (id)
     ON DELETE RESTRICT
+    ON UPDATE CASCADE,
+  CONSTRAINT fk_persona_direccion
+    FOREIGN KEY (direccion_id)
+    REFERENCES direccion (id)
+    ON DELETE SET NULL
     ON UPDATE CASCADE
-);
-
-ALTER TABLE persona_pedido
-ADD COLUMN direccion_id INT NULL AFTER pedido_id;
-
-ALTER TABLE persona_pedido
-ADD CONSTRAINT fk_persona_direccion
-FOREIGN KEY (direccion_id)
-REFERENCES direccion (id);
-
-CREATE TABLE IF NOT EXISTS direccion (
-	id INT AUTO_INCREMENT PRIMARY KEY,
-  calle VARCHAR(100) NOT NULL,
-  altura INT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS piezas_reparacion_droide (
@@ -147,15 +138,13 @@ CREATE TABLE IF NOT EXISTS historial_droides (
   fecha_evento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   descripcion TEXT NOT NULL,
   pieza_usada_id INT NULL,
-  pieza_usada_nombre VARCHAR(100) NULL,
+  pieza_usada_nombre VARCHAR(100),
   en_servicio TINYINT(1) NOT NULL,
-
   CONSTRAINT fk_historial_droide
     FOREIGN KEY (droide_id)
     REFERENCES droide (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
-
   CONSTRAINT fk_historial_pieza
     FOREIGN KEY (pieza_usada_id)
     REFERENCES piezas_reparacion_droide (id)
@@ -168,14 +157,12 @@ CREATE TABLE IF NOT EXISTS reparacion_droide (
   droide_id INT NOT NULL,
   pieza_id INT NOT NULL,
   fecha_reparacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  observacion VARCHAR(255) NULL,
-
+  observacion VARCHAR(255),
   CONSTRAINT fk_reparacion_droide
     FOREIGN KEY (droide_id)
     REFERENCES droide (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE,
-
   CONSTRAINT fk_reparacion_pieza
     FOREIGN KEY (pieza_id)
     REFERENCES piezas_reparacion_droide (id)
@@ -188,15 +175,13 @@ CREATE TABLE IF NOT EXISTS archivo_pedido (
   persona_pedido_id INT NOT NULL,
   nombre_archivo VARCHAR(255) NOT NULL,
   fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
+  datos_pedido JSON,
   CONSTRAINT fk_archivo_persona_pedido
     FOREIGN KEY (persona_pedido_id)
     REFERENCES persona_pedido (id)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
-
-ALTER TABLE archivo_pedido ADD COLUMN datos_pedido JSON AFTER nombre_archivo;
 
 CREATE TABLE IF NOT EXISTS auditor (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -209,7 +194,6 @@ CREATE TABLE IF NOT EXISTS auditoria (
   fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   detalles JSON NOT NULL,
   auditor_id INT NOT NULL,
-
   CONSTRAINT fk_auditoria_auditor
     FOREIGN KEY (auditor_id)
     REFERENCES auditor (id)
@@ -220,7 +204,8 @@ CREATE TABLE IF NOT EXISTS auditoria (
 -- Vistas
 
 CREATE OR REPLACE VIEW vw_reporte AS
-SELECT * FROM log_movimientos;
+SELECT * 
+FROM log_movimientos;
 
 CREATE OR REPLACE VIEW vw_archivos_pedidos AS
 SELECT
@@ -234,17 +219,9 @@ SELECT
     p.name AS nombre_producto,
     p.qty,
     p.ubicacion_pieza,
-    u.id,
-    u.x,
-    u.y,
-    u.z,
-    pm.id AS producto_modelo_id,
-    m.id AS modelo_id,
-    m.nombre AS nombre_modelo
-FROM productos p 
-LEFT JOIN ubicacion u ON p.ubicacion_pieza = u.id
-LEFT JOIN producto_modelo pm ON p.id = pm.producto_id
-LEFT JOIN modelo m ON pm.modelo_id = m.id;
+    u.id AS ubicacion_id
+FROM productos p
+LEFT JOIN ubicacion u ON p.ubicacion_pieza = u.id;
 
 CREATE OR REPLACE VIEW vw_persona_pedido_detalle AS
 SELECT 
@@ -260,14 +237,24 @@ SELECT
     p.tipo_movimiento,
     p.tiempo AS fecha_pedido,
     prod.id AS producto_id,
-    prod.name AS name_producto,
-    m.id AS modelo_id,
-    m.nombre AS nombre_modelo
+    prod.name AS nombre_producto,
+    prod.qty AS stock_actual,
+    d.id AS droide_id,
+    d.name AS nombre_droide,
+    d.en_servicio,
+    d.fecha_servicio,
+    md.id AS modelo_id,
+    md.nombre AS nombre_modelo,
+    md.tipo AS tipo_modelo
 FROM persona_pedido pp
-INNER JOIN pedido p ON pp.pedido_id = p.id
-INNER JOIN productos prod ON p.pieza = prod.id
-INNER JOIN producto_modelo pm ON prod.id = pm.producto_id
-INNER JOIN modelo m ON pm.modelo_id = m.id;
+INNER JOIN pedido p 
+    ON pp.pedido_id = p.id
+INNER JOIN productos prod 
+    ON p.pieza = prod.id
+LEFT JOIN droide d 
+    ON p.droideAsignado = d.id
+LEFT JOIN modelo_droide md 
+    ON d.modelo_id = md.id;
 
 CREATE OR REPLACE VIEW vw_piezas_modelos_droides_failure AS
 SELECT
@@ -290,11 +277,14 @@ INNER JOIN piezas_reparacion_droide prd ON rd.pieza_id = prd.id
 INNER JOIN droide d ON rd.droide_id = d.id
 INNER JOIN modelo_droide md ON d.modelo_id = md.id;
 
+
 -- Procedimientos
 
 DELIMITER $$
 
 -- ubicacion y productos
+
+DELIMITER $$
 
 CREATE PROCEDURE pr_crear_ubicacion (
 	IN p_id INT,
@@ -304,10 +294,22 @@ CREATE PROCEDURE pr_crear_ubicacion (
     IN p_descripcion VARCHAR(100)
 )
 BEGIN
-	DECLARE v_mensaje VARCHAR(500);
+    DECLARE v_mensaje VARCHAR(500);
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SET v_mensaje = f_mensaje_personalizado(
+            'error',
+            'No se pudo crear la ubicación. Verifique los datos.'
+        );
+        SELECT v_mensaje AS mensaje;
+    END;
     INSERT INTO ubicacion (id, X, Y, Z, descripcion)
     VALUES (p_id, p_X, p_Y, p_Z, p_descripcion);
-    SET v_mensaje = mensaje_personalizado('success',CONCAT('Ubicación ', p_X, p_Y, p_Z, ' creada correctamente'));
+    SET v_mensaje = f_mensaje_personalizado(
+        'success',
+        CONCAT('Ubicación ', p_X, ',', p_Y, ',', p_Z, ' creada correctamente')
+    );
+    SELECT v_mensaje AS mensaje;
 END$$
 
 CREATE PROCEDURE pr_obtener_ubicaciones ()
@@ -322,10 +324,14 @@ CREATE PROCEDURE pr_crear_producto (
 )
 BEGIN
 	DECLARE v_mensaje VARCHAR(500);
+    DECLARE CONTINUE HANDLER FOR SQLEXCEPTION
     INSERT INTO productos (name, qty, ubicacion_pieza)
     VALUES (p_name, p_qty, p_ubicacion_id);
-    SET v_mensaje = mensaje_personalizado('success',CONCAT('Producto ', name, ' creada correctamente'));
-    SELECT LAST_INSERT_ID() AS nuevo_producto_id;
+    SET v_mensaje = f_mensaje_personalizado(
+        'success',
+        CONCAT('Producto ', p_name, ' creado correctamente')
+		);
+    SELECT LAST_INSERT_ID() AS nuevo_producto_id, v_mensaje AS mensaje;
 END$$
 
 CREATE PROCEDURE pr_obtener_productos()
@@ -344,7 +350,7 @@ CREATE PROCEDURE pr_editar_producto (
     IN p_ubicacion_id INT
 )
 BEGIN
-DECLARE v_mensaje VARCHAR(500);
+    DECLARE v_mensaje VARCHAR(500);
     UPDATE productos
     SET name = p_name,
         qty = p_qty,
@@ -352,8 +358,9 @@ DECLARE v_mensaje VARCHAR(500);
     WHERE id = p_id;
     SET v_mensaje = mensaje_personalizado(
 		'success',
-		CONCAT('Producto ', p_id, ' actualizado correctamente.')
+		CONCAT('Producto ', p_id, ' actualizado correctamente')
     );
+    SELECT v_mensaje AS mensaje;
 END$$
 
 CREATE PROCEDURE pr_crear_modelo (
@@ -395,7 +402,6 @@ END$$
 
 -- pedidos
 
-
 CREATE PROCEDURE pr_crear_pedido_restar_sumar(
     IN p_pieza INT,
     IN p_cantidad INT,
@@ -410,30 +416,21 @@ BEGIN
     ORDER BY RAND()
     LIMIT 1;
     IF v_droideAsignado IS NULL THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'No hay droides disponibles para asignar.';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'No hay droides disponibles.';
+    END IF;
+    IF p_tipo_movimiento = 0 THEN
+        IF f_verificar_stock_productos(p_pieza, p_cantidad) = FALSE THEN
+			SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Stock insuficiente.';
+		END IF;
+    END IF;
+    INSERT INTO pedido (pieza, cantidad, droideAsignado, tipo_movimiento, tiempo)
+    VALUES (p_pieza, p_cantidad, v_droideAsignado, p_tipo_movimiento, NOW());
+    IF p_tipo_movimiento = 0 THEN
+        UPDATE productos SET qty = qty - p_cantidad WHERE id = p_pieza;
     ELSE
-        IF p_tipo_movimiento = 0 THEN
-            SET v_stock_ok = verificar_stock(p_pieza, p_cantidad);
-            IF v_stock_ok = FALSE THEN
-                SIGNAL SQLSTATE '45000'
-                SET MESSAGE_TEXT = 'No hay suficiente stock para realizar el pedido.';
-            END IF;
-        END IF;
-        INSERT INTO pedido (pieza, cantidad, droideAsignado, tipo_movimiento, tiempo)
-        VALUES (p_pieza, p_cantidad, v_droideAsignado, p_tipo_movimiento, NOW());
-        IF p_tipo_movimiento = 0 THEN
-            UPDATE productos
-            SET qty = qty - p_cantidad
-            WHERE id = p_pieza;
-        ELSEIF p_tipo_movimiento = 1 THEN
-            UPDATE productos
-            SET qty = qty + p_cantidad
-            WHERE id = p_pieza;
-        END IF;
+        UPDATE productos SET qty = qty + p_cantidad WHERE id = p_pieza;
     END IF;
 END$$
-
 
 CREATE PROCEDURE pr_deshacer_pedido_autoasignado(
     IN p_pedido_id INT
@@ -442,29 +439,20 @@ BEGIN
     DECLARE v_pieza INT;
     DECLARE v_cantidad INT;
     DECLARE v_tipo_movimiento TINYINT;
-    DECLARE v_exist INT;
-    SELECT COUNT(*) INTO v_exist
+
+    SELECT pieza, cantidad, tipo_movimiento
+    INTO v_pieza, v_cantidad, v_tipo_movimiento
     FROM pedido
     WHERE id = p_pedido_id;
-    IF v_exist = 0 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'El pedido especificado no existe.';
-    ELSE
-        SELECT pieza, cantidad, tipo_movimiento
-        INTO v_pieza, v_cantidad, v_tipo_movimiento
-        FROM pedido
-        WHERE id = p_pedido_id;
-        IF v_tipo_movimiento = 1 THEN
-            UPDATE productos
-            SET qty = qty - v_cantidad
-            WHERE id = v_pieza;
-        ELSEIF v_tipo_movimiento = 0 THEN
-            UPDATE productos
-            SET qty = qty + v_cantidad
-            WHERE id = v_pieza;
-        END IF;
-        DELETE FROM pedido WHERE id = p_pedido_id;
+    IF v_pieza IS NULL THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El pedido no existe.';
     END IF;
+    IF v_tipo_movimiento = 1 THEN
+        UPDATE productos SET qty = qty - v_cantidad WHERE id = v_pieza;
+    ELSE
+        UPDATE productos SET qty = qty + v_cantidad WHERE id = v_pieza;
+    END IF;
+    DELETE FROM pedido WHERE id = p_pedido_id;
 END$$
 
 CREATE PROCEDURE pr_gestionar_direccion (
@@ -474,21 +462,15 @@ CREATE PROCEDURE pr_gestionar_direccion (
 BEGIN
     DECLARE v_existente INT;
 
-    -- Verifica si ya existe una dirección con la misma calle y altura
     SELECT COUNT(*) INTO v_existente
     FROM direccion
     WHERE calle = p_calle AND altura = p_altura;
 
-    -- Si no existe, la inserta; si existe, la actualiza
     IF v_existente = 0 THEN
         INSERT INTO direccion (calle, altura)
         VALUES (p_calle, p_altura);
-    ELSE
-        UPDATE direccion
-        SET calle = p_calle,
-            altura = p_altura
-        WHERE calle = p_calle AND altura = p_altura;
     END IF;
+    SELECT id FROM direccion WHERE calle = p_calle AND altura = p_altura;
 END$$
 
 CREATE PROCEDURE pr_registrar_persona_pedido (
@@ -502,16 +484,15 @@ CREATE PROCEDURE pr_registrar_persona_pedido (
 )
 BEGIN
     DECLARE v_pedido_exist INT;
+
     SELECT COUNT(*) INTO v_pedido_exist
     FROM pedido
     WHERE id = p_pedido_id;
     IF v_pedido_exist = 0 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = 'El pedido especificado no existe.';
-    ELSE
-        INSERT INTO persona_pedido (nombre, apellido, empresa, dni_cuil, pedido_id, patente, direccion_id)
-		VALUES (p_nombre, p_apellido, p_empresa, p_dni_cuil, p_pedido_id, p_patente, p_direccion_id);
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El pedido no existe.';
     END IF;
+    INSERT INTO persona_pedido (nombre, apellido, empresa, dni_cuil, pedido_id, patente, direccion_id)
+    VALUES (p_nombre, p_apellido, p_empresa, p_dni_cuil, p_pedido_id, p_patente, p_direccion_id);
 END$$
 
 -- droides
@@ -531,7 +512,8 @@ CREATE PROCEDURE pr_agregar_modelo (
     IN p_tipo ENUM('terrestre', 'aereo')
 )
 BEGIN
-	INSERT INTO modelo_droide (nombre, tipo) VALUES (p_nombre_modelo, p_tipo);
+	INSERT INTO modelo_droide (nombre, tipo)
+    VALUES (p_nombre_modelo, p_tipo);
 END$$
 
 CREATE PROCEDURE pr_nueva_pieza (
@@ -541,8 +523,8 @@ CREATE PROCEDURE pr_nueva_pieza (
     IN cantidad INT
 )
 BEGIN
-	INSERT INTO piezas_reparacion_droide ( nombre_pieza, partida_mes, partida_anio, cantidad)
-	VALUES (nombre_pieza,partida_mes,partida_anio,cantidad);
+	INSERT INTO piezas_reparacion_droide (nombre_pieza, partida_mes, partida_anio, cantidad)
+	VALUES (nombre_pieza, partida_mes, partida_anio, cantidad);
 END$$
 
 CREATE PROCEDURE pr_modificar_droide (
@@ -613,36 +595,7 @@ BEGIN
         CONCAT('Nuevo droide agregado: ID=', NEW.id, ', Nombre=', NEW.name, ', En servicio=', NEW.en_servicio)
     );
 END$$
- 
-CREATE TRIGGER trg_pedido_stock_update
-AFTER INSERT ON pedido
-FOR EACH ROW
-BEGIN
-    IF NEW.tipo_movimiento = 1 THEN
-        UPDATE productos
-        SET qty = qty + NEW.cantidad
-        WHERE id = NEW.pieza;
-        INSERT INTO log_movimientos (tabla_afectada, operacion, descripcion)
-        VALUES (
-            'productos',
-            'STOCK +',
-            CONCAT('Se sumaron ', NEW.cantidad, ' unidades al producto ID=', NEW.pieza, ' por pedido ID=', NEW.id)
-        );
 
-    ELSEIF NEW.tipo_movimiento = 0 THEN
-        UPDATE productos
-        SET qty = qty - NEW.cantidad
-        WHERE id = NEW.pieza;
-
-        INSERT INTO log_movimientos (tabla_afectada, operacion, descripcion)
-        VALUES (
-            'productos',
-            'STOCK -',
-            CONCAT('Se restaron ', NEW.cantidad, ' unidades al producto ID=', NEW.pieza, ' por pedido ID=', NEW.id)
-        );
-    END IF;
-END$$
- 
 CREATE TRIGGER trg_productos_ingresados
 AFTER insert ON productos
 for each row
@@ -745,22 +698,20 @@ BEGIN
   IF NEW.droideAsignado IS NOT NULL THEN
     SELECT name INTO v_nombre_droide FROM droide WHERE id = NEW.droideAsignado;
     SELECT name INTO v_nombre_pieza FROM productos WHERE id = NEW.pieza;
-    INSERT INTO historial_droides (
-      droide_id,
-      nombre_droide,
-      descripcion,
-      pieza_usada_nombre,
-      en_servicio
-    )
-    VALUES (
-      NEW.droideAsignado,
-      v_nombre_droide,
-      CONCAT('Pedido registrado. Tipo de movimiento: ', NEW.tipo_movimiento,
-             '. Pieza: ', v_nombre_pieza,
-             '. Cantidad: ', NEW.cantidad),
-      v_nombre_pieza,
-      1
-    );
+INSERT INTO historial_droides (
+    droide_id,
+    nombre_droide,
+    descripcion,
+    pieza_usada_nombre,
+    en_servicio
+)
+VALUES (
+    NEW.droideAsignado,
+    v_nombre_droide,
+    CONCAT('Pedido registrado...'),
+    v_nombre_pieza,
+    1
+);
   END IF;
 END$$
 
@@ -783,10 +734,15 @@ BEGIN
     INTO v_pieza, v_cantidad, v_droide, v_tipo_movimiento, v_tiempo
     FROM pedido p
     WHERE p.id = NEW.pedido_id;
+    IF NEW.direccion_id IS NOT NULL THEN
     SELECT d.calle, d.altura
     INTO v_calle, v_altura
     FROM direccion d
     WHERE d.id = NEW.direccion_id;
+ELSE
+    SET v_calle = NULL;
+    SET v_altura = NULL;
+END IF;
     SET v_nombre_archivo = CONCAT(
         NEW.nombre, '_',
         NEW.apellido, '_Pedido_',
@@ -830,7 +786,7 @@ BEGIN
             'Nuevo registro de auditoría ID: ', NEW.id,
             ', Auditor ID: ', NEW.auditor_id,
             ', Fecha: ', NEW.fecha_registro,
-            ', Detalles: ', JSON_EXTRACT(NEW.detalles, '$')
+            ', Detalles: ', NEW.detalles
         )
     );
 END$$
@@ -854,21 +810,22 @@ BEGIN
     RETURN mensaje_final;
 END$$
 
-CREATE FUNCTION f_verificar_stock(p_producto_id INT, p_cantidad INT)
+CREATE FUNCTION f_verificar_stock_productos(
+    p_producto_id INT,
+    p_cantidad INT
+)
 RETURNS BOOLEAN
 DETERMINISTIC
 BEGIN
-    DECLARE v_stock_actual INT;
-
-    SELECT qty INTO v_stock_actual
+    DECLARE v_stock INT;
+    SELECT qty INTO v_stock
     FROM productos
     WHERE id = p_producto_id;
-
-    IF v_stock_actual IS NULL THEN
+    IF v_stock IS NULL THEN
         RETURN FALSE;
-    ELSEIF v_stock_actual < p_cantidad THEN
-        RETURN FALSE;
-    ELSE
-        RETURN TRUE;
     END IF;
+    IF v_stock < p_cantidad THEN
+        RETURN FALSE;
+    END IF;
+    RETURN TRUE;
 END$$
